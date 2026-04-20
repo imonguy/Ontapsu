@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Lịch Sử 11 - HKII</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-color: #f8f9fa;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary-color); text-transform: uppercase; margin-bottom: 5px; }
+        .sub-title { text-align: center; color: #666; margin-bottom: 30px; }
+        .question-card { border: 1px solid #eee; padding: 20px; margin-bottom: 20px; border-radius: 10px; border-left: 5px solid var(--primary-color); transition: 0.3s; }
+        .question-text { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: block; }
+        .option { display: block; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .option:hover { background-color: #f1f3f4; border-color: var(--primary-color); }
+        .option input { margin-right: 12px; transform: scale(1.2); }
+        #btn-submit { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #btn-submit:hover { background: #1557b0; }
+        /* Hiệu ứng đúng/sai */
+        .correct-card { background-color: #e6ffed; border-color: var(--success-color); }
+        .wrong-card { background-color: #fff5f5; border-color: var(--error-color); }
+        .feedback { font-weight: bold; margin-top: 10px; display: none; }
+        #result-summary { display: none; text-align: center; padding: 20px; background: #e8f0fe; border-radius: 10px; margin-bottom: 25px; border: 2px solid var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Ôn Tập Lịch Sử 11</h1>
+    <p class="sub-title">Bộ câu hỏi trắc nghiệm ôn thi Học kì II</p>
+
+    <div id="result-summary">
+        <h2 id="score-text"></h2>
+        <button onclick="location.reload()" style="padding: 10px 20px; cursor:pointer;">Làm lại bài</button>
+    </div>
+
+    <div id="quiz-container">
+        </div>
+
+    <button id="btn-submit">Nộp Bài & Xem Kết Quả</button>
+</div>
+
+<script>
+// Danh sách 35 câu hỏi dựa trên nội dung ôn tập của bạn
+const questions = [
+    {id: 1, q: "Bốn câu thơ trong 'Thiên Nam Ngữ Lục' nói về cuộc khởi nghĩa nào?", options: ["Khúc Thừa Dụ", "Lý Bí", "Hai Bà Trưng", "Phùng Hưng"], a: "Hai Bà Trưng"},
+    {id: 2, q: "Câu nói 'Tôi chỉ muốn cưỡi cơn gió mạnh, đạp luồng sóng dữ...' là của ai?", options: ["Bà Triệu (Triệu Thị Trinh)", "Bà Trưng Trắc", "Bùi Thị Xuân", "Lê Ngọc Hân"], a: "Bà Triệu (Triệu Thị Trinh)"},
+    {id: 3, q: "Khởi nghĩa Lam Sơn (1418-1427) diễn ra trong bối cảnh nào?", options: ["Đại Việt bị nhà Nguyên cai trị", "Đại Việt bị nhà Minh đô hộ", "Đại Việt bị chia cắt Đàng Trong-Đàng Ngoài", "Đại Việt có chủ quyền"], a: "Đại Việt bị nhà Minh đô hộ"},
+    {id: 4, q: "Hồ Quý Ly đã thực hiện chính sách gì sau khi lên ngôi?", options: ["Kháng chiến chống Xiêm", "Cục diện Nam-Bắc triều", "Nhiều chính sách cải cách", "Mở rộng lãnh thổ về phía Nam"], a: "Nhiều chính sách cải cách"},
+    {id: 5, q: "Năm 1397, Hồ Quý Ly ban hành chính sách hạn điền nhằm mục đích gì?", options: ["Chia ruộng cho dân nghèo", "Hạn chế sở hữu ruộng đất lớn của tư nhân", "Bảo vệ sức kéo nông nghiệp", "Xóa bỏ gian dối ruộng đất"], a: "Hạn chế sở hữu ruộng đất lớn của tư nhân"},
+    {id: 6, q: "Dưới triều Hồ, tôn giáo nào bị suy giảm vai trò?", options: ["Nho giáo và Đạo giáo", "Phật giáo và Đạo giáo", "Hồi giáo", "Thiên Chúa giáo"], a: "Phật giáo và Đạo giáo"},
+    {id: 7, q: "Mô hình hành chính sau cải cách của Lê Thánh Tông là gì?", options: ["Đạo, lộ, phủ, châu, xã", "Đạo thừa tuyên, phủ, huyện, châu, xã", "Lộ, trấn, phủ, châu, xã", "Lộ, đạo, phủ, huyện, xã"], a: "Đạo thừa tuyên, phủ, huyện, châu, xã"},
+    {id: 8, q: "Bộ luật nào tiến bộ nhất thời phong kiến Việt Nam?", options: ["Hình luật", "Hình thư", "Quốc triều hình luật (Luật Hồng Đức)", "Hoàng Việt luật lệ"], a: "Quốc triều hình luật (Luật Hồng Đức)"},
+    {id: 9, q: "Vua Lê Thánh Tông tuyển chọn quan lại chủ yếu qua hình thức nào?", options: ["Dòng dõi", "Tiến cử", "Giáo dục – khoa cử", "Mua quan bán tước"], a: "Giáo dục – khoa cử"},
+    {id: 10, q: "Năm 1471, nước ta chia thành bao nhiêu đạo thừa tuyên?", options: ["12 đạo", "13 đạo thừa tuyên và phủ Trung Đô", "10 đạo", "15 đạo"], a: "13 đạo thừa tuyên và phủ Trung Đô"},
+    {id: 11, q: "Vua Lê Thánh Tông ban hành chính sách kinh tế nào nổi bật?", options: ["Quân điền và lộc điền", "Ngụ binh ư nông", "Hà đê sứ", "Hạn điền"], a: "Quân điền và lộc điền"},
+    {id: 12, q: "Để tôn vinh người đỗ đạt, vua Lê Thánh Tông đã làm gì?", options: ["Phong tước hầu", "Dựng bia đá tại Văn Miếu", "Thưởng nhiều vàng bạc", "Gả công chúa"], a: "Dựng bia đá tại Văn Miếu"},
+    {id: 13, q: "Bộ máy nhà nước phong kiến hoàn chỉnh nhất dưới thời vua nào?", options: ["Lý Công Uẩn", "Trần Nhân Tông", "Lê Thánh Tông", "Lê Thái Tổ"], a: "Lê Thánh Tông"},
+    {id: 14, q: "Trần Hưng Đạo kế thừa kế sách nào của Ngô Quyền năm 1288?", options: ["Tiên phát chế nhân", "Đóng cọc trên sông Bạch Đằng", "Vây thành diệt viện", "Thanh dã"], a: "Đóng cọc trên sông Bạch Đằng"},
+    {id: 15, q: "Câu 'vua tôi đồng tâm, anh em hòa mục' nói về điều gì?", options: ["Nghệ thuật quân sự", "Sức mạnh đại đoàn kết dân tộc", "Cách đánh du kích", "Sự giàu có của đất nước"], a: "Sức mạnh đại đoàn kết dân tộc"},
+    {id: 16, q: "Ý nghĩa lớn nhất của chiến thắng Bạch Đằng 938?", options: ["Kết thúc 1000 năm Bắc thuộc", "Đánh tan quân Tống", "Mở mang bờ cõi", "Lật đổ nhà Đường"], a: "Kết thúc 1000 năm Bắc thuộc"},
+    {id: 17, q: "Quân Xiêm 'sợ quân Tây Sơn như sợ cọp' sau trận nào?", options: ["Ngọc Hồi - Đống Đa", "Rạch Gầm - Xoài Mút", "Chi Lăng", "Phù Ly"], a: "Rạch Gầm - Xoài Mút"},
+    {id: 18, q: "'Bạch Đằng nhất trận hỏa công' là nói về năm nào?", options: ["938", "981", "1288", "1785"], a: "1288"},
+    {id: 19, q: "Nguyên nhân quyết định thắng lợi của khởi nghĩa Lam Sơn?", options: ["Vũ khí hiện đại", "Địa hình hiểm trở", "Lòng yêu nước và đoàn kết của nhân dân", "Nhà Minh suy yếu"], a: "Lòng yêu nước và đoàn kết của nhân dân"},
+    {id: 20, q: "Điểm khác của KN Lam Sơn so với chống Tống thời Lý?", options: ["Đánh khi đã mất nước (đô hộ)", "Đánh khi đang có độc lập", "Có tướng giỏi", "Dùng ngoại giao"], a: "Đánh khi đã mất nước (đô hộ)"},
+    {id: 21, q: "Đặc điểm nổi bật của các cuộc KN thời Bắc thuộc?", options: ["Thất bại nhanh chóng", "Diễn ra liên tục, mạnh mẽ", "Quy mô nhỏ", "Do vua lãnh đạo"], a: "Diễn ra liên tục, mạnh mẽ"},
+    {id: 22, q: "'Tướng sĩ một lòng phụ tử' thể hiện truyền thống nào?", options: ["Hiếu học", "Đoàn kết", "Nhân đạo", "Cần cù"], a: "Đoàn kết"},
+    {id: 23, q: "Nghệ thuật 'Chủ động kết thúc chiến tranh' được áp dụng ở đâu?", options: ["Chống Tống", "Chống Mông Nguyên", "KN Lam Sơn", "Tất cả các ý trên"], a: "Tất cả các ý trên"},
+    {id: 24, q: "Nguyên nhân chủ quan chung dẫn đến thắng lợi các cuộc đấu tranh?", options: ["Quân địch yếu", "Tinh thần yêu nước và lãnh đạo tài giỏi", "Thời tiết thuận lợi", "Súng thần cơ"], a: "Tinh thần yêu nước và lãnh đạo tài giỏi"},
+    {id: 25, q: "Nội dung phản ánh tính đại chúng trong giáo dục của Hồ Quý Ly?", options: ["Mở trường học ở các lộ, phủ, châu", "Dạy chữ Nôm", "Thi cử gắt gao", "Bỏ thi cử"], a: "Mở trường học ở các lộ, phủ, châu"},
+    {id: 26, q: "Điểm tiến bộ nhất trong cải cách của Hồ Quý Ly?", options: ["Tính dân tộc và ý thức tự cường", "Xây thành nhà Hồ", "Dùng tiền giấy", "Hạn nô"], a: "Tính dân tộc và ý thức tự cường"},
+    {id: 27, q: "Bài học từ sự thất bại của nhà Hồ là gì?", options: ["Phải xây thành cao", "Phải có nhiều súng", "Phải dựa vào sức mạnh toàn dân", "Phải cầu viện láng giềng"], a: "Phải dựa vào sức mạnh toàn dân"},
+    {id: 28, q: "Nhận định SAI về cải cách của Hồ Quý Ly?", options: ["Nâng tiềm lực quốc phòng", "Đề cao văn hóa dân tộc", "Giúp giữ nước lâu dài trước quân Minh", "Có tính quyết liệt"], a: "Giúp giữ nước lâu dài trước quân Minh"},
+    {id: 29, q: "Nhận định ĐÚNG về cải cách của Hồ Quý Ly?", options: ["Đáp ứng yêu cầu lịch sử nhưng chưa triệt để", "Hoàn toàn thất bại", "Làm đất nước suy yếu", "Chỉ phục vụ lợi ích cá nhân"], a: "Đáp ứng yêu cầu lịch sử nhưng chưa triệt để"},
+    {id: 30, q: "Mục đích cải cách hành chính của Lê Thánh Tông?", options: ["Tập trung quyền lực vào tay vua", "Phân tán quyền lực", "Bớt quan lại", "Chống lại nhà Minh"], a: "Tập trung quyền lực vào tay vua"},
+    {id: 31, q: "Lục Bộ thời Lê Thánh Tông có chức năng gì?", options: ["Cơ quan tư vấn", "Các cơ quan hành chính cao cấp thực thi việc nước", "Giám sát nhà vua", "Chỉ lo việc thi cử"], a: "Các cơ quan hành chính cao cấp thực thi việc nước"},
+    {id: 32, q: "Đặc điểm cải cách của Lê Thánh Tông?", options: ["Chỉ làm ở trung ương", "Thực hiện đồng bộ từ trung ương đến địa phương", "Chỉ lo quân sự", "Làm theo mô hình phương Tây"], a: "Thực hiện đồng bộ từ trung ương đến địa phương"},
+    {id: 33, q: "Điểm tương đồng giữa tuyển chọn quan lại thời Lê và hiện nay?", options: ["Dòng dõi", "Dựa trên năng lực và phẩm chất thông qua thi tuyển", "Dựa trên tiền bạc", "Ưu tiên người già"], a: "Dựa trên năng lực và phẩm chất thông qua thi tuyển"},
+    {id: 34, q: "Cải cách Lê Thánh Tông giúp khắc phục điều gì?", options: ["Nạn đói", "Sự chuyên quyền của đại thần và nguy cơ cát cứ", "Quân xâm lược", "Bệnh dịch"], a: "Sự chuyên quyền của đại thần và nguy cơ cát cứ"},
+    {id: 35, q: "Mô hình quân chủ thời Lê Sơ ảnh hưởng thế nào đến đời sau?", options: ["Bị bãi bỏ ngay", "Trở thành khuôn mẫu cho các triều đại sau (Nguyễn, Lê Trung Hưng)", "Chỉ dùng trong 10 năm", "Không có giá trị"], a: "Trở thành khuôn mẫu cho các triều đại sau (Nguyễn, Lê Trung Hưng)"}
+];
+
+// Hàm hiển thị danh sách câu hỏi
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    questions.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-card-${item.id}`;
+        
+        let optionsHTML = '';
+        item.options.forEach(opt => {
+            optionsHTML += `
+                <label class="option">
+                    <input type="radio" name="q${item.id}" value="${opt}"> ${opt}
+                </label>
+            `;
+        });
+
+        card.innerHTML = `
+            <span class="question-text">Câu ${index + 1}: ${item.q}</span>
+            ${optionsHTML}
+            <div class="feedback" id="feedback-${item.id}"></div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Xử lý nộp bài
+document.getElementById('btn-submit').onclick = function() {
+    let score = 0;
+    
+    questions.forEach(item => {
+        const selectedCard = document.getElementById(`q-card-${item.id}`);
+        const feedback = document.getElementById(`feedback-${item.id}`);
+        const selectedOption = document.querySelector(`input[name="q${item.id}"]:checked`);
+        
+        feedback.style.display = 'block';
+        
+        if (selectedOption && selectedOption.value === item.a) {
+            score++;
+            selectedCard.classList.add('correct-card');
+            selectedCard.classList.remove('wrong-card');
+            feedback.innerHTML = "✓ Đúng!";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            selectedCard.classList.add('wrong-card');
+            selectedCard.classList.remove('correct-card');
+            feedback.innerHTML = `✗ Sai. Đáp án đúng: ${item.a}`;
+            feedback.style.color = "var(--error-color)";
+        }
+    });
+
+    // Hiển thị bảng điểm
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    document.getElementById('result-summary').style.display = 'block';
+    document.getElementById('score-text').innerText = `Kết quả: ${score} / ${questions.length} câu đúng`;
+    this.style.display = 'none'; // Ẩn nút nộp bài
+};
+
+// Chạy hàm hiển thị khi trang web load
+renderQuiz();
+</script>
+
+</body>
+</html>
